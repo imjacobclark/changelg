@@ -5,3 +5,4 @@ authors = ["Jacob Clark <jacob.jh.clark@googlemail.com>"]
 
 [dependencies]
 git2 = "0.4.3"
+regex = "0.1.71"
