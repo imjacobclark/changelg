@@ -1,7 +1,7 @@
 extern crate git2;
 extern crate regex;
 
-#[cfg(not(test))] use std::env;
+use std::env;
 
 use git2::{Repository, Commit};
 use regex::Regex;
@@ -15,10 +15,18 @@ macro_rules! option_match {
 }
 
 fn main() {
+    changelg(env::args().collect());
+}
+
+fn changelg(args: Vec<String>) {
     let repo = option_match!(Repository::open("./"));
     let mut revwalk = option_match!(repo.revwalk());
 
-    option_match!(revwalk.push_range(&commit_range()[..]));
+    option_match!(
+        revwalk.push_range(
+            &commit_range(&args[1][..], &args[2][..])[..]
+        )
+    );
 
     let revwalk = revwalk.filter_map(|id| {
         let id = option_match!(id);
@@ -32,20 +40,7 @@ fn main() {
     }
 }
 
-fn print_to_stdout(commit: &Commit) {            
-    for line in String::from_utf8_lossy(commit.message_bytes()).lines() {
-        let re = Regex::new(r"^#changelog.*$").unwrap();
-        
-        if re.is_match(line) {
-            println!("{} by {}", line, commit.author());
-        }
-    };        
-}
-
-fn commit_range() -> String {
-    let args: Vec<_> = env::args().collect();
-    let commit_from: &str = &args[1][..];
-    let commit_to: &str = &args[2][..];
+fn commit_range(commit_from: &str, commit_to: &str) -> String {
     let mut commit_range = String::from("");
     
     commit_range.push_str(commit_from);
@@ -55,9 +50,17 @@ fn commit_range() -> String {
     commit_range
 }
 
-#[cfg(test)] mod env {
-    use std::vec;
-    pub fn args() -> vec::IntoIter<&'static str> { vec!["changelg", "377d686351969f27f288dec2fb09d0d5431fcde1", "3763e0e3ff218cbdfbf99c68109a04d666e81abeto"].into_iter() }
+fn print_to_stdout(commit: &Commit) {            
+    for line in String::from_utf8_lossy(commit.message_bytes()).lines() {
+        if match_changelog_identifier(line) {
+            println!("{} by {}", line, commit.author());
+        };
+    };        
+}
+
+fn match_changelog_identifier(line: &str) -> bool {
+    let re = Regex::new(r"^#changelog.*$").unwrap();
+    re.is_match(line)
 }
 
 #[test]
@@ -82,5 +85,18 @@ fn it_should_return_result_on_ok_in_option_match() {
 
 #[test]
 fn it_should_return_expected_commit_range_string(){
-    assert_eq!(commit_range(), "377d686351969f27f288dec2fb09d0d5431fcde1..3763e0e3ff218cbdfbf99c68109a04d666e81abeto");
+    let commit_range = commit_range("377d686351969f27f288dec2fb09d0d5431fcde1", "3763e0e3ff218cbdfbf99c68109a04d666e81abeto");
+    assert_eq!(commit_range, "377d686351969f27f288dec2fb09d0d5431fcde1..3763e0e3ff218cbdfbf99c68109a04d666e81abeto");
+}
+
+#[test]
+fn it_should_return_true_when_a_string_is_tagged_changelog_(){
+    let result = match_changelog_identifier("#changelog Hello World");
+    assert_eq!(result, true);
+}
+
+#[test]
+fn it_should_return_false_when_a_string_is_tagged_changelog_(){
+    let result = match_changelog_identifier("Hello World");
+    assert_eq!(result, false);
 }
