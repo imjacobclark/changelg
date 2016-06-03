@@ -1,6 +1,8 @@
 # changelg
 Generate changelog reports from Git repositories
 
+[![Build Status](https://travis-ci.org/imjacobclark/changelg.svg)](https://travis-ci.org/imjacobclark/changelg)
+
 ### Usage
 
 ```shell
