@@ -53,7 +53,7 @@ fn commit_range(commit_from: &str, commit_to: &str) -> String {
 fn print_to_stdout(commit: &Commit) {            
     for line in String::from_utf8_lossy(commit.message_bytes()).lines() {
         if match_changelog_identifier(line) {
-            println!("{} by {}", line, commit.author());
+            println!("{} by {}", strip_changelog_hashtag(line), commit.author());
         };
     };        
 }
@@ -61,6 +61,13 @@ fn print_to_stdout(commit: &Commit) {
 fn match_changelog_identifier(line: &str) -> bool {
     let re = Regex::new(r"^#changelog.*$").unwrap();
     re.is_match(line)
+}
+
+fn strip_changelog_hashtag(commit_msg: &str) -> &str {
+    if commit_msg.to_lowercase().starts_with("#changelog ") {
+        return &commit_msg[11..].trim_left();
+    }
+    commit_msg
 }
 
 #[test]
@@ -99,4 +106,22 @@ fn it_should_return_true_when_a_string_is_tagged_changelog_(){
 fn it_should_return_false_when_a_string_is_not_tagged_changelog_(){
     let result = match_changelog_identifier("Hello World");
     assert_eq!(result, false);
+}
+
+#[test]
+fn it_should_return_message_without_hashtag() {
+    let result = strip_changelog_hashtag("#changelog This is a test commit message");
+    assert_eq!(result, "This is a test commit message");
+}
+
+#[test]
+fn it_should_return_message_without_hashtag_and_surplus_whitespace() {
+    let result = strip_changelog_hashtag("#changelog     This is a test commit message");
+    assert_eq!(result, "This is a test commit message");
+}
+
+#[test]
+fn it_should_return_message_without_changes_if_not_changelog() {
+    let result = strip_changelog_hashtag("This is a test commit message without a changelog hashtag");
+    assert_eq!(result, "This is a test commit message without a changelog hashtag");
 }
