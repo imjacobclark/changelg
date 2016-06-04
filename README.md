@@ -1,6 +1,10 @@
 # changelg
 Generate changelog reports from Git repositories
 
+### About
+
+Changelg walks your Git revision history between two commit or tag hashes and pulls out any message tagged with `#changelog`.
+
 ### Usage
 
 ```shell
