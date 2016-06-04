@@ -96,7 +96,7 @@ fn it_should_return_true_when_a_string_is_tagged_changelog_(){
 }
 
 #[test]
-fn it_should_return_false_when_a_string_is_tagged_changelog_(){
+fn it_should_return_false_when_a_string_is_not_tagged_changelog_(){
     let result = match_changelog_identifier("Hello World");
     assert_eq!(result, false);
 }
