@@ -1,6 +1,8 @@
 # changelg
 Generate changelog reports from Git repositories
 
+[![Build Status](https://travis-ci.org/imjacobclark/changelg.svg)](https://travis-ci.org/imjacobclark/changelg)
+
 ### About
 
 Changelg walks your Git revision history between two commit or tag hashes and pulls out any message tagged with `#changelog`.
